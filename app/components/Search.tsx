@@ -1,5 +1,4 @@
 "use client"
-import { useState } from "react";
 
 type SearchType = "dense" | "sparse" | "hybrid";
 
@@ -22,7 +21,7 @@ export default function Search({ type, state, onStateChange }: SearchProps) {
     
     if (!state.query.trim()) return;
 
-    onStateChange({ error: null, isLoading: true });
+    onStateChange({ error: null, isLoading: true, results: [] });
 
     try {
       const response = await fetch(`/api/search/${type}?text_query=${encodeURIComponent(state.query)}`);
@@ -67,7 +66,7 @@ export default function Search({ type, state, onStateChange }: SearchProps) {
           disabled={state.isLoading || !state.query.trim()}
           className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {state.isLoading ? "Searching..." : "Search"}
+          Search
         </button>
       </form>
 
@@ -77,21 +76,27 @@ export default function Search({ type, state, onStateChange }: SearchProps) {
         </div>
       )}
 
-      {state.results.length > 0 && (
+      {(state.isLoading || state.results.length > 0) && (
         <div className="space-y-4">
           <h2 className="text-xl font-semibold mb-4">Search Results</h2>
-          <ul className="space-y-2">
-            {state.results.map((result: any) => (
-              <li
-                key={result._id}
-                className="p-4 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-zinc-800"
-              >
-                <p>ID: {result._id}</p>
-                <p>Score: {result.score}</p>
-                <p>Text: {result.chunk_text}</p>
-              </li>
-            ))}
-          </ul>
+          {state.isLoading ? (
+            <div className="flex justify-center items-center py-8">
+              <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+            </div>
+          ) : (
+            <ul className="space-y-2">
+              {state.results.map((result: any) => (
+                <li
+                  key={result._id}
+                  className="p-4 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-zinc-800"
+                >
+                  <p>ID: {result._id}</p>
+                  <p>Score: {result.score}</p>
+                  <p>Text: {result.chunk_text}</p>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       )}
     </div>
