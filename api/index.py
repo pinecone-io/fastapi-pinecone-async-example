@@ -84,6 +84,7 @@ async def query_dense_index(text_query: str):
                 top_k=settings.pinecone_top_k,
             ),
         )
+
 # score here is semantic similarity score (cosine similarity)
 # the reranker score is more about relevance to the query based on the reranker model - relevance score
     results = prepare_results(response.result.hits)
@@ -112,20 +113,15 @@ def prepare_results(hits: list):
         "score": hit['_score'],
         "chunk_text": hit['fields']['chunk_text'],
     } for hit in hits]
-    
+
 def dedup_combined_results(combined_results: list):
     seen_ids = {}
-    deduped_records = []
+    deduped_results = []
     
     # Keep first occurrence of each ID
     for result in combined_results:
         if result['_id'] not in seen_ids:
             seen_ids[result['_id']] = True
-            record = {
-                "_id": result['_id'],
-                "score": result['score'],
-                "chunk_text": result['chunk_text'],
-            }
-            deduped_records.append(record)
+            deduped_results.append(result)
     
-    return sorted(deduped_records, key=lambda x: x['score'], reverse=True)
+    return sorted(deduped_results, key=lambda x: x['score'], reverse=True)
