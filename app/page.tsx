@@ -2,7 +2,7 @@
 import { useState } from "react";
 import Search from "./components/Search";
 
-type SearchType = "dense" | "sparse";
+type SearchType = "dense" | "sparse" | "hybrid";
 
 interface SearchState {
   query: string;
@@ -25,12 +25,20 @@ export default function Home() {
     isLoading: false,
     error: null,
   });
+  const [hybridState, setHybridState] = useState<SearchState>({
+    query: "",
+    results: [],
+    isLoading: false,
+    error: null,
+  });
 
   const handleStateChange = (type: SearchType, newState: Partial<SearchState>) => {
     if (type === "dense") {
       setDenseState(prev => ({ ...prev, ...newState }));
-    } else {
+    } else if (type === "sparse") {
       setSparseState(prev => ({ ...prev, ...newState }));
+    } else {
+      setHybridState(prev => ({ ...prev, ...newState }));
     }
   };
 
@@ -60,13 +68,29 @@ export default function Home() {
               >
                 Sparse Search
               </button>
+              <button
+                onClick={() => setActiveTab("hybrid")}
+                className={`${
+                  activeTab === "hybrid"
+                    ? "border-blue-500 text-blue-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+              >
+                Hybrid Search
+              </button>
             </nav>
           </div>
         </div>
 
         <Search 
           type={activeTab}
-          state={activeTab === "dense" ? denseState : sparseState}
+          state={
+            activeTab === "dense"
+              ? denseState
+              : activeTab === "sparse"
+                ? sparseState
+                : hybridState
+          }
           onStateChange={(newState) => handleStateChange(activeTab, newState)}
         />
       </div>

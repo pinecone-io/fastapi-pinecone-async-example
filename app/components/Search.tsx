@@ -1,7 +1,7 @@
 "use client"
 import { useState } from "react";
 
-type SearchType = "dense" | "sparse";
+type SearchType = "dense" | "sparse" | "hybrid";
 
 interface SearchState {
   query: string;
