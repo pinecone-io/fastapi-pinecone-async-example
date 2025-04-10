@@ -4,11 +4,12 @@ This is a sample app to demonstrate how to use the [Pinecone Python SDK](https:/
 
 ## Getting started
 
-### Pre-requisites
+### Prerequisites
 
-- A Pinecone account and API key. You can create your account and your a Pinecone API key by following [these steps](https://docs.pinecone.io/guides/projects/manage-api-keys#create-an-api-key).
-- Python 3.12 or higher
-- [Node.js](https://nodejs.org/) 20 or higher
+- A Pinecone account. Create your free account [here](https://app.pinecone.io/?sessionType=signup) if you don't already have one.
+- A Pinecone API key by following [these steps](https://docs.pinecone.io/guides/projects/manage-api-keys#create-an-api-key).
+- Python 3.12 or higher.
+- [Node.js](https://nodejs.org/) 20 or higher.
 
 ### Setup
 
@@ -16,24 +17,32 @@ This is a sample app to demonstrate how to use the [Pinecone Python SDK](https:/
 
 Set up your custom environment variables by copying the `.env.example` file in the project root and replacing with your environment values.
 
-#### Create Python virtual environment
-
-Create and activate a Python virtual environment:
-
-```bash
-python3 -m venv venv
-source venv/bin/activate
-```
-
-#### Install dependencies
+#### Install Node dependencies
 
 ```bash
 npm install
 ```
 
-### Run the app
+#### Create Python virtual environment
 
-Python dependencies will be installed automatically.
+Create and activate a Python virtual environment:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+#### Install Python dependencies
+
+```bash
+pip3 install -r requirements.txt
+```
+
+#### Create indexes load data
+
+TODO
+
+### Run the app
 
 ```bash
 npm run dev
