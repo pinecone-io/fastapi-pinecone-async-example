@@ -1,5 +1,4 @@
 from fastapi import FastAPI, HTTPException
-from pinecone import SearchQuery
 from api import deps
 from api.config import settings
 
@@ -37,12 +36,12 @@ async def query_hybrid(text_query: str):
     async with deps.get_pinecone_dense_index() as dense_idx:
         dense_response = await dense_idx.search_records(
             namespace=settings.pinecone_namespace,
-            query=SearchQuery(
-                inputs={
+            query={
+                "inputs": {
                     "text": text_query,
                 },
-                top_k=settings.pinecone_top_k,
-            ),
+                "top_k": settings.pinecone_top_k,
+            },
             rerank={
                 "model": "cohere-rerank-3.5",
                 "rank_fields": ["chunk_text"]
@@ -53,12 +52,12 @@ async def query_hybrid(text_query: str):
     async with deps.get_pinecone_sparse_index() as sparse_idx:
         sparse_response = await sparse_idx.search_records(
             namespace=settings.pinecone_namespace,
-            query=SearchQuery(
-                inputs={
+            query={
+                "inputs": {
                     "text": text_query,
                 },
-                top_k=settings.pinecone_top_k,
-            ),
+                "top_k": settings.pinecone_top_k,
+            },
             rerank={
                 "model": "cohere-rerank-3.5",
                 "rank_fields": ["chunk_text"]
@@ -77,12 +76,12 @@ async def query_dense_index(text_query: str):
     async with deps.get_pinecone_dense_index() as idx:
         response = await idx.search_records(
             namespace=settings.pinecone_namespace,
-            query=SearchQuery(
-                inputs={
+            query={
+                "inputs": {
                     "text": text_query,
                 },
-                top_k=settings.pinecone_top_k,
-            ),
+                "top_k": settings.pinecone_top_k,
+            },
         )
 
 # score here is semantic similarity score (cosine similarity)
@@ -95,12 +94,12 @@ async def query_sparse_index(text_query: str):
     async with deps.get_pinecone_sparse_index() as idx:
         response = await idx.search_records(
             namespace=settings.pinecone_namespace,
-            query=SearchQuery(
-                inputs={
+            query={
+                "inputs":{
                     "text": text_query,
                 },
-                top_k=settings.pinecone_top_k,
-            ),
+                "top_k": settings.pinecone_top_k,
+            },
         )
 
     results = prepare_results(response.result.hits)
