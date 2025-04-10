@@ -1,3 +1,4 @@
+import asyncio
 from fastapi import FastAPI, HTTPException
 from api import deps
 from api.config import settings
@@ -9,7 +10,8 @@ async def semantic_search(text_query: str = None):
     if not text_query or not text_query.strip():
         raise HTTPException(status_code=422, detail="Text query cannot be empty")
     
-    results = await query_dense_index(text_query)
+    dense_response = await query_dense_index(text_query)
+    results = prepare_results(dense_response.result.hits)
 
     return {"results": results}
 
@@ -18,7 +20,8 @@ async def lexical_search(text_query: str = None):
     if not text_query or not text_query.strip():
         raise HTTPException(status_code=422, detail="Text query cannot be empty")
     
-    results = await query_sparse_index(text_query)
+    sparse_response = await query_sparse_index(text_query)
+    results = prepare_results(sparse_response.result.hits)
     
     return {"results": results}
 
@@ -27,54 +30,21 @@ async def cascading_retrieval(text_query: str = None):
     if not text_query or not text_query.strip():
         raise HTTPException(status_code=422, detail="Text query cannot be empty")
     
-    dense_results, sparse_results, combined_results = await query_hybrid(text_query)    
+    dense_response, sparse_response = await asyncio.gather(
+        query_dense_index(text_query, rerank=True),
+        query_sparse_index(text_query, rerank=True)
+    )
 
-    return {"dense_results": dense_results, "sparse_results": sparse_results, "results": combined_results}
-
-async def query_hybrid(text_query: str):
-    # First do dense search
-    async with deps.get_pinecone_dense_index() as dense_idx:
-        dense_response = await dense_idx.search_records(
-            namespace=settings.pinecone_namespace,
-            query={
-                "inputs": {
-                    "text": text_query,
-                },
-                "top_k": settings.pinecone_top_k,
-            },
-            rerank={
-                "model": "cohere-rerank-3.5",
-                "rank_fields": ["chunk_text"]
-            }
-        )
-
-    # Then do sparse search
-    async with deps.get_pinecone_sparse_index() as sparse_idx:
-        sparse_response = await sparse_idx.search_records(
-            namespace=settings.pinecone_namespace,
-            query={
-                "inputs": {
-                    "text": text_query,
-                },
-                "top_k": settings.pinecone_top_k,
-            },
-            rerank={
-                "model": "cohere-rerank-3.5",
-                "rank_fields": ["chunk_text"]
-            }
-        )
-
-    dense_results = prepare_results(dense_response.result.hits)
-    sparse_results = prepare_results(sparse_response.result.hits)
-    
-    combined_results = dense_results + sparse_results
+    combined_results = dense_response.result.hits + sparse_response.result.hits
     deduped_results = dedup_combined_results(combined_results)
 
-    return dense_results, sparse_results, deduped_results[:settings.pinecone_top_k]
+    results = deduped_results[:settings.pinecone_top_k]
+
+    return {"results": results}
         
-async def query_dense_index(text_query: str):
+async def query_dense_index(text_query: str, rerank: bool = False):
     async with deps.get_pinecone_dense_index() as idx:
-        response = await idx.search_records(
+        return await idx.search_records(
             namespace=settings.pinecone_namespace,
             query={
                 "inputs": {
@@ -82,17 +52,15 @@ async def query_dense_index(text_query: str):
                 },
                 "top_k": settings.pinecone_top_k,
             },
+            rerank={
+                "model": "cohere-rerank-3.5",
+                "rank_fields": ["chunk_text"]
+            } if rerank else None
         )
 
-# score here is semantic similarity score (cosine similarity)
-# the reranker score is more about relevance to the query based on the reranker model - relevance score
-    results = prepare_results(response.result.hits)
-    
-    return results
-
-async def query_sparse_index(text_query: str):
+async def query_sparse_index(text_query: str, rerank: bool = False):
     async with deps.get_pinecone_sparse_index() as idx:
-        response = await idx.search_records(
+        return await idx.search_records(
             namespace=settings.pinecone_namespace,
             query={
                 "inputs":{
@@ -100,11 +68,11 @@ async def query_sparse_index(text_query: str):
                 },
                 "top_k": settings.pinecone_top_k,
             },
+            rerank={
+                "model": "cohere-rerank-3.5",
+                "rank_fields": ["chunk_text"]
+            } if rerank else None
         )
-
-    results = prepare_results(response.result.hits)
-
-    return results
 
 def prepare_results(hits: list):
     return [{
@@ -115,12 +83,17 @@ def prepare_results(hits: list):
 
 def dedup_combined_results(combined_results: list):
     seen_ids = {}
-    deduped_results = []
+    deduped_records = []
     
     # Keep first occurrence of each ID
     for result in combined_results:
         if result['_id'] not in seen_ids:
             seen_ids[result['_id']] = True
-            deduped_results.append(result)
+            record = {
+                "_id": result['_id'],
+                "score": result['_score'],
+                "chunk_text": result['fields']['chunk_text'],
+            }
+            deduped_records.append(record)
     
-    return sorted(deduped_results, key=lambda x: x['score'], reverse=True)
+    return sorted(deduped_records, key=lambda x: x['score'], reverse=True)
