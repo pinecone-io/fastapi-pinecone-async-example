@@ -82,18 +82,13 @@ def prepare_results(hits: list):
     } for hit in hits]
 
 def dedup_combined_results(combined_results: list):
-    seen_ids = {}
-    deduped_records = []
+    unique_records = {
+        result['_id']: {
+            "_id": result['_id'],
+            "score": result['_score'],
+            "chunk_text": result['fields']['chunk_text'],
+        }
+        for result in combined_results
+    }
     
-    # Keep first occurrence of each ID
-    for result in combined_results:
-        if result['_id'] not in seen_ids:
-            seen_ids[result['_id']] = True
-            record = {
-                "_id": result['_id'],
-                "score": result['_score'],
-                "chunk_text": result['fields']['chunk_text'],
-            }
-            deduped_records.append(record)
-    
-    return sorted(deduped_records, key=lambda x: x['score'], reverse=True)
+    return sorted(unique_records.values(), key=lambda x: x['score'], reverse=True)
