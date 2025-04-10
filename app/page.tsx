@@ -2,7 +2,7 @@
 import { useState } from "react";
 import Search from "./components/Search";
 
-type SearchType = "dense" | "sparse" | "hybrid";
+type SearchType = "semantic-search" | "lexical-search" | "cascading-retrieval";
 
 interface SearchState {
   query: string;
@@ -12,20 +12,20 @@ interface SearchState {
 }
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState<SearchType>("dense");
-  const [denseState, setDenseState] = useState<SearchState>({
+  const [activeTab, setActiveTab] = useState<SearchType>("semantic-search");
+  const [semanticSearchState, setSemanticSearchState] = useState<SearchState>({
     query: "",
     results: [],
     isLoading: false,
     error: null,
   });
-  const [sparseState, setSparseState] = useState<SearchState>({
+  const [lexicalSearchState, setLexicalSearchState] = useState<SearchState>({
     query: "",
     results: [],
     isLoading: false,
     error: null,
   });
-  const [hybridState, setHybridState] = useState<SearchState>({
+  const [cascadingRetrievalState, setCascadingRetrievalState] = useState<SearchState>({
     query: "",
     results: [],
     isLoading: false,
@@ -33,12 +33,12 @@ export default function Home() {
   });
 
   const handleStateChange = (type: SearchType, newState: Partial<SearchState>) => {
-    if (type === "dense") {
-      setDenseState(prev => ({ ...prev, ...newState }));
-    } else if (type === "sparse") {
-      setSparseState(prev => ({ ...prev, ...newState }));
+    if (type === "semantic-search") {
+      setSemanticSearchState(prev => ({ ...prev, ...newState }));
+    } else if (type === "lexical-search") {
+      setLexicalSearchState(prev => ({ ...prev, ...newState }));
     } else {
-      setHybridState(prev => ({ ...prev, ...newState }));
+      setCascadingRetrievalState(prev => ({ ...prev, ...newState }));
     }
   };
 
@@ -49,34 +49,34 @@ export default function Home() {
           <div className="border-b border-gray-200 dark:border-gray-700">
             <nav className="-mb-px flex space-x-8">
               <button
-                onClick={() => setActiveTab("dense")}
+                onClick={() => setActiveTab("semantic-search")}
                 className={`${
-                  activeTab === "dense"
+                  activeTab === "semantic-search"
                     ? "border-blue-500 text-blue-600"
                     : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                 } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
               >
-                Dense Search
+                Semantic Search
               </button>
               <button
-                onClick={() => setActiveTab("sparse")}
+                onClick={() => setActiveTab("lexical-search")}
                 className={`${
-                  activeTab === "sparse"
+                  activeTab === "lexical-search"
                     ? "border-blue-500 text-blue-600"
                     : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                 } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
               >
-                Sparse Search
+                Lexical Search
               </button>
               <button
-                onClick={() => setActiveTab("hybrid")}
+                onClick={() => setActiveTab("cascading-retrieval")}
                 className={`${
-                  activeTab === "hybrid"
+                  activeTab === "cascading-retrieval"
                     ? "border-blue-500 text-blue-600"
                     : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                 } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
               >
-                Hybrid Search
+                Cascading Retrieval
               </button>
             </nav>
           </div>
@@ -85,11 +85,11 @@ export default function Home() {
         <Search 
           type={activeTab}
           state={
-            activeTab === "dense"
-              ? denseState
-              : activeTab === "sparse"
-                ? sparseState
-                : hybridState
+            activeTab === "semantic-search"
+              ? semanticSearchState
+              : activeTab === "lexical-search"
+                ? lexicalSearchState
+                : cascadingRetrievalState
           }
           onStateChange={(newState) => handleStateChange(activeTab, newState)}
         />

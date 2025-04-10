@@ -1,6 +1,6 @@
 "use client"
 
-type SearchType = "dense" | "sparse" | "hybrid";
+type SearchType = "semantic-search" | "lexical-search" | "cascading-retrieval";
 
 interface SearchState {
   query: string;
@@ -24,7 +24,7 @@ export default function Search({ type, state, onStateChange }: SearchProps) {
     onStateChange({ error: null, isLoading: true, results: [] });
 
     try {
-      const response = await fetch(`/api/search/${type}?text_query=${encodeURIComponent(state.query)}`);
+      const response = await fetch(`/api/${type}?text_query=${encodeURIComponent(state.query)}`);
       
       if (!response.ok) {
         if (response.status === 422) {

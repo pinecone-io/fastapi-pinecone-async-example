@@ -4,8 +4,8 @@ from api.config import settings
 
 app = FastAPI(docs_url="/api/docs", openapi_url="/api/openapi.json")
 
-@app.get("/api/search/dense")
-async def dense_search(text_query: str = None):
+@app.get("/api/semantic-search")
+async def semantic_search(text_query: str = None):
     if not text_query or not text_query.strip():
         raise HTTPException(status_code=422, detail="Text query cannot be empty")
     
@@ -13,8 +13,8 @@ async def dense_search(text_query: str = None):
 
     return {"results": results}
 
-@app.get("/api/search/sparse")
-async def sparse_search(text_query: str = None):
+@app.get("/api/lexical-search")
+async def lexical_search(text_query: str = None):
     if not text_query or not text_query.strip():
         raise HTTPException(status_code=422, detail="Text query cannot be empty")
     
@@ -22,8 +22,8 @@ async def sparse_search(text_query: str = None):
     
     return {"results": results}
 
-@app.get("/api/search/hybrid")
-async def hybrid_search(text_query: str = None):
+@app.get("/api/cascading-retrieval")
+async def cascading_retrieval(text_query: str = None):
     if not text_query or not text_query.strip():
         raise HTTPException(status_code=422, detail="Text query cannot be empty")
     
