@@ -1,4 +1,4 @@
-# Using the Pinecone Python SDK with Asyncio support
+# Using the Pinecone with Asyncio support and FastAPI
 
 This is a sample app to demonstrate how to use the [Pinecone Python SDK](https://docs.pinecone.io/reference/python-sdk) with [asyncio](https://docs.python.org/3/library/asyncio.html) support. This is a simple Next.js app with a FastAPI backend.
 

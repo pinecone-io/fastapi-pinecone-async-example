@@ -1,5 +1,5 @@
 {
-  "name": "using-pinecone-python-sdk-with-asyncio-support",
+  "name": "fastapi-pinecone-async-example",
   "version": "0.1.0",
   "private": true,
   "scripts": {
