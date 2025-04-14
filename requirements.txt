@@ -3,3 +3,5 @@ pydantic-settings==2.8.1
 pinecone[asyncio]==6.0.2
 fastapi==0.115.0
 uvicorn[standard]==0.30.6
+nltk==3.9.1
+datasets==3.5.0

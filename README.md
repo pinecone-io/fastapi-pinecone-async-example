@@ -13,16 +13,6 @@ This is a sample app to demonstrate how to use the [Pinecone Python SDK](https:/
 
 ### Setup
 
-#### Setup environment
-
-Set up your custom environment variables by copying the `.env.example` file in the project root and replacing with your environment values.
-
-#### Install Node dependencies
-
-```bash
-npm install
-```
-
 #### Create Python virtual environment
 
 Create and activate a Python virtual environment:
@@ -38,11 +28,42 @@ source .venv/bin/activate
 pip3 install -r requirements.txt
 ```
 
-#### Create indexes load data
+#### Create indexes and load data
 
-TODO
+If you don't have both a dense index and a sparse index loaded with your own data, you can load test data using the `load-data.py` in the `scripts` directory. This will create two indexes:
+
+1. a dense index using NVIDIA's `llama-text-embed-v2`, a state-of-the-art embedding model available natively in Pinecone Inference
+2. a sparse index using Pinecone's own `pinecone-sparse-english-v0` embedding model
+
+Once the indexes are created, it will chunk and upsert data from a dataset on Huggingface, converting the text to dense vectors automatically using the hosted embedding model.
+
+##### Setup the script environment
+
+Set up your scripts environment variables by copying the `.env.example` file in the `scripts` directory to `.env` and replacing with your environment values.
+
+##### Run the script
+
+From the `scripts` directory, run:
+
+```bash
+python3 load-data.py
+```
+
+#### Setup the app environment
+
+Set up your app environment variables by copying the `.env.example` file in the project root to `.env` and replacing with your environment values. You'll need to grab the index host URLs either from the [Pinecone console](https://app.pinecone.io/organizations/-/projects/-/indexes) or from the Pinecone API using `describe_index` as detailed [here](https://docs.pinecone.io/guides/data/target-an-index).
+
+#### Install Node dependencies
+
+From the project root, run:
+
+```bash
+npm install
+```
 
 ### Run the app
+
+From the project root, run:
 
 ```bash
 npm run dev
@@ -50,5 +71,5 @@ npm run dev
 
 Head over to [http://localhost:3000](http://localhost:3000) to view the app.
 
-The FastApi server will be running on [http://127.0.0.1:8000](http://127.0.0.1:8000).
+The FastAPI server will be running on [http://127.0.0.1:8000](http://127.0.0.1:8000).
 
