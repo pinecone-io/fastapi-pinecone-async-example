@@ -35,7 +35,7 @@ If you don't have both a dense index and a sparse index loaded with your own dat
 1. a dense index using NVIDIA's `llama-text-embed-v2`, a state-of-the-art embedding model available natively in Pinecone Inference
 2. a sparse index using Pinecone's own `pinecone-sparse-english-v0` embedding model
 
-Once the indexes are created, it will chunk and upsert data from a dataset on Huggingface, converting the text to dense vectors automatically using the hosted embedding model.
+Once the indexes are created, it will chunk and upsert data from the [GEM/sportsett_basketball dataset on Huggingface](https://huggingface.co/datasets/GEM/sportsett_basketball/viewer/default/test), converting the text to vectors automatically using the hosted embedding model.
 
 ##### Setup the script environment
 
