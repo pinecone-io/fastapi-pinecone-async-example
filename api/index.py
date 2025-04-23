@@ -1,9 +1,22 @@
 import asyncio
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException
 from api import deps
 from api.config import settings
 
-app = FastAPI(docs_url="/api/docs", openapi_url="/api/openapi.json")
+pinecone_indexes = {}
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    pinecone_indexes["dense"] = deps.get_pinecone_dense_index()
+    pinecone_indexes["sparse"] = deps.get_pinecone_sparse_index()
+
+    yield
+
+    await pinecone_indexes["dense"].close()
+    await pinecone_indexes["sparse"].close()
+
+app = FastAPI(lifespan=lifespan, docs_url="/api/docs", openapi_url="/api/openapi.json")
 
 @app.get("/api/semantic-search")
 async def semantic_search(text_query: str = None):
@@ -43,36 +56,34 @@ async def cascading_retrieval(text_query: str = None):
     return {"results": results}
         
 async def query_dense_index(text_query: str, rerank: bool = False):
-    async with deps.get_pinecone_dense_index() as idx:
-        return await idx.search_records(
-            namespace=settings.pinecone_namespace,
-            query={
-                "inputs": {
-                    "text": text_query,
-                },
-                "top_k": settings.pinecone_top_k,
+    return await pinecone_indexes['dense'].search_records(
+        namespace=settings.pinecone_namespace,
+        query={
+            "inputs": {
+                "text": text_query,
             },
-            rerank={
-                "model": "cohere-rerank-3.5",
-                "rank_fields": ["chunk_text"]
-            } if rerank else None
-        )
+            "top_k": settings.pinecone_top_k,
+        },
+        rerank={
+            "model": "cohere-rerank-3.5",
+            "rank_fields": ["chunk_text"]
+        } if rerank else None
+    )
 
 async def query_sparse_index(text_query: str, rerank: bool = False):
-    async with deps.get_pinecone_sparse_index() as idx:
-        return await idx.search_records(
-            namespace=settings.pinecone_namespace,
-            query={
-                "inputs":{
-                    "text": text_query,
-                },
-                "top_k": settings.pinecone_top_k,
+    return await pinecone_indexes['sparse'].search_records(
+        namespace=settings.pinecone_namespace,
+        query={
+            "inputs":{
+                "text": text_query,
             },
-            rerank={
-                "model": "cohere-rerank-3.5",
-                "rank_fields": ["chunk_text"]
-            } if rerank else None
-        )
+            "top_k": settings.pinecone_top_k,
+        },
+        rerank={
+            "model": "cohere-rerank-3.5",
+            "rank_fields": ["chunk_text"]
+        } if rerank else None
+    )
 
 def prepare_results(hits: list):
     return [{
