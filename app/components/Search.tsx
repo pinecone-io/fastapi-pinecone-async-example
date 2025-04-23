@@ -7,7 +7,17 @@ interface SearchState {
   results: any[];
   isLoading: boolean;
   error: string | null;
+  showSuggestions: boolean;
 }
+
+const PROPOSED_QUERIES = [
+  "Which games were close?",
+  "Which games were competitive?",
+  "Which games were hard?",
+  "Find games where the home team won?",
+  "Who are the strong players for Minnesota Timberwolves?",
+  "Find games where rookie players performed well?"
+];
 
 interface SearchProps {
   type: SearchType;
@@ -54,13 +64,32 @@ export default function Search({ type, state, onStateChange }: SearchProps) {
   return (
     <div className="w-full">
       <form onSubmit={handleSearch} className="flex gap-2 mb-8">
-        <input
-          type="text"
-          value={state.query}
-          onChange={(e) => onStateChange({ query: e.target.value })}
-          placeholder="Enter your search query..."
-          className="flex-1 px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
+        <div className="flex-1 relative">
+          <input
+            type="text"
+            value={state.query}
+            onChange={(e) => onStateChange({ query: e.target.value })}
+            onFocus={() => onStateChange({ showSuggestions: true })}
+            onBlur={() => setTimeout(() => onStateChange({ showSuggestions: false }), 200)}
+            placeholder="Enter your search query..."
+            className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          {state.showSuggestions && (
+            <div className="absolute z-10 w-full mt-1 bg-white dark:bg-zinc-800 border border-gray-300 dark:border-gray-700 rounded-lg shadow-lg">
+              {PROPOSED_QUERIES.map((query, index) => (
+                <div
+                  key={index}
+                  className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-zinc-700 cursor-pointer"
+                  onClick={() => {
+                    onStateChange({ query, showSuggestions: false });
+                  }}
+                >
+                  {query}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
         <button
           type="submit"
           disabled={state.isLoading || !state.query.trim()}
