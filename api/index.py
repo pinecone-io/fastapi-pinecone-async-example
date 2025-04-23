@@ -4,16 +4,17 @@ from fastapi import FastAPI, HTTPException
 from api import deps
 from api.config import settings
 
-pinecone_clients = {}
+pinecone_indexes = {}
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    async with deps.get_pinecone_dense_index() as dense_index:
-        async with deps.get_pinecone_sparse_index() as sparse_index:
-            pinecone_clients['dense'] = dense_index
-            pinecone_clients['sparse'] = sparse_index
+    pinecone_indexes["dense"] = deps.get_pinecone_dense_index()
+    pinecone_indexes["sparse"] = deps.get_pinecone_sparse_index()
 
-            yield
+    yield
+
+    await pinecone_indexes["dense"].close()
+    await pinecone_indexes["sparse"].close()
 
 app = FastAPI(lifespan=lifespan, docs_url="/api/docs", openapi_url="/api/openapi.json")
 
@@ -55,7 +56,7 @@ async def cascading_retrieval(text_query: str = None):
     return {"results": results}
         
 async def query_dense_index(text_query: str, rerank: bool = False):
-    return await pinecone_clients['dense'].search_records(
+    return await pinecone_indexes['dense'].search_records(
         namespace=settings.pinecone_namespace,
         query={
             "inputs": {
@@ -70,7 +71,7 @@ async def query_dense_index(text_query: str, rerank: bool = False):
     )
 
 async def query_sparse_index(text_query: str, rerank: bool = False):
-    return await pinecone_clients['sparse'].search_records(
+    return await pinecone_indexes['sparse'].search_records(
         namespace=settings.pinecone_namespace,
         query={
             "inputs":{
