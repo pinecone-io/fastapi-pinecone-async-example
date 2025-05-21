@@ -6,7 +6,7 @@ from tqdm import tqdm
 from settings import settings
 
 def main():
-    pc = Pinecone(api_key=settings.pinecone_api_key, source_tag="pinecone:fastapi-pinecone-async-example")
+    pc = Pinecone(api_key=settings.pinecone_api_key, source_tag="pinecone:fastapi_pinecone_async_example")
 
     dense_index = create_index(pc, settings.pinecone_dense_index_name, settings.dense_embedding_model)
     sparse_index = create_index(pc, settings.pinecone_sparse_index_name, settings.sparse_embedding_model)
