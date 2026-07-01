@@ -9,6 +9,7 @@ interface SearchState {
   results: any[];
   isLoading: boolean;
   error: string | null;
+  showSuggestions: boolean;
 }
 
 export default function Home() {
@@ -18,18 +19,21 @@ export default function Home() {
     results: [],
     isLoading: false,
     error: null,
+    showSuggestions: true,
   });
   const [lexicalSearchState, setLexicalSearchState] = useState<SearchState>({
     query: "",
     results: [],
     isLoading: false,
     error: null,
+    showSuggestions: true,
   });
   const [cascadingRetrievalState, setCascadingRetrievalState] = useState<SearchState>({
     query: "",
     results: [],
     isLoading: false,
     error: null,
+    showSuggestions: true,
   });
 
   const handleStateChange = (type: SearchType, newState: Partial<SearchState>) => {
