@@ -18,7 +18,7 @@
     "concurrently": "^10.0.4",
     "eslint": "^9.39.2",
     "eslint-config-next": "^16.2.9",
-    "next": "^16.2.9",
+    "next": "^16.2.11",
     "postcss": "^8.5.16",
     "react": "18.3.1",
     "react-dom": "18.3.1",
